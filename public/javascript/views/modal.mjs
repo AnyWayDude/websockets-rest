@@ -79,8 +79,9 @@ const showMessageModal = ({ message, onClose = () => {} }) => {
 	rootElement.append(modalElement);
 
 	closeButton.addEventListener('click', () => {
-		modalElement.remove();
 		onClose();
+		modalElement.remove();
+	
 	});
 };
 
