@@ -1,14 +1,18 @@
 import { showMessageModal, showInputModal } from "./views/modal.mjs";
 import { appendRoomElement } from "./views/room.mjs";
+import { appendUserElement, changeReadyStatus } from "./views/user.mjs";
 
 
 const username = sessionStorage.getItem('username');
+
 const addRoomBtn = document.getElementById('add-room-btn');
 const availableRooms = document.getElementById('rooms-page');
 const gamePage = document.getElementById('game-page');
 const roomName = document.getElementById('room-name');
 const allRooms = document.getElementById('rooms-wrapper')
 const leaveRoomBtn = document.getElementById('quit-room-btn')
+const readytBtn = document.getElementById('ready-btn')
+const usersContainer = document.getElementById("users-wrapper");
 
 
 if (!username) {
@@ -37,8 +41,8 @@ socket.on("UPDATE_ROOMS", (rooms) => {
 		numberOfUsers: userCount,
 		onJoin: () => {
 		  socket.emit("ENTER_ROOM", name);
-		  availableRooms.classList.toggle("display-none");
-		  gamePage.classList.toggle("display-none");
+		  availableRooms.classList.toggle('display-none');
+		  gamePage.classList.toggle('display-none');
 		  roomName.innerText = name;
 		},
 	  });
@@ -64,6 +68,18 @@ addRoomBtn.addEventListener('click', () => {
 	});
 });
 
+socket.on('UPDATE_ROOM', (users) => {
+	usersContainer.replaceChildren();
+  
+	users.forEach(({ username, ready, isCurrentUser }) => {
+	  appendUserElement({
+		username,
+		ready,
+		isCurrentUser,
+	  });
+	});
+  });
+
 socket.on("CREATE_ROOM_SUCCESS", (name) => {
 	availableRooms.classList.toggle('display-none');
 	gamePage.classList.toggle('display-none');
@@ -87,4 +103,17 @@ socket.on("CREATE_ROOM_SUCCESS", (name) => {
 	gamePage.classList.toggle('display-none');
   })
 
+  readytBtn.addEventListener('click', () => {
+	const room = roomName.innerText.trim();
+
+	socket.emit('READY', room)
+  })
+
+  socket.on("READY-STATUS", ({username, ready}) => {
+	changeReadyStatus({username, ready});
+});
+
+
+  
+ 
   

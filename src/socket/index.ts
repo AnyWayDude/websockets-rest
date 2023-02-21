@@ -1,5 +1,8 @@
 import { Server } from 'socket.io';
-import { updateRoomsHelper, updateRoomHelper, User } from '../helpers/updateRoomsHelper';
+import {
+	updateRoomsHelper,
+	User
+} from '../helpers/updateRoomsHelper';
 import * as config from './config';
 
 
@@ -39,7 +42,9 @@ export default (io: Server) => {
 			]);
 			socket.join(room);
 			socket.emit("CREATE_ROOM_SUCCESS", room);
+			socket.emit("UPDATE_ROOM", roomsMap.get(room));
 			io.emit("UPDATE_ROOMS", updateRoomsHelper(roomsMap, io));
+
 		})
 
 		socket.on("LEAVE_ROOM", (room) => {
@@ -69,7 +74,7 @@ export default (io: Server) => {
 				},
 			]);
 			io.emit("UPDATE_ROOMS", updateRoomsHelper(roomsMap, io));
-			io.to(room).emit("UPDATE_ROOM", updateRoomHelper(room, socket.id, io));
+			io.to(room).emit("UPDATE_ROOM", roomsMap.get(room));
 		});
 
 		io.of("/").adapter.on("leave-room", (room, id) => {
@@ -86,16 +91,26 @@ export default (io: Server) => {
 			if (!usersToUpdate.length) {
 				roomsMap.delete(room);
 			} else {
-				io.to(room).emit("UPDATE_ROOM", updateRoomHelper(room, id, io));
+				io.to(room).emit("UPDATE_ROOM", roomsMap.get(room));
 			}
 
 			io.emit("UPDATE_ROOMS", updateRoomsHelper(roomsMap, io));
 		});
 
+		socket.on("READY", (room) => {
+			const ready = true;
+			const currentRoomUsers = roomsMap.get(room) ?? [];
+			const currentUserindex = currentRoomUsers.findIndex((user) => user.username === username);
+			currentRoomUsers[currentUserindex].ready = ready;
 
+			roomsMap.set(room, currentRoomUsers);
 
-
-
+			io.to(room).emit("READY-STATUS", {
+				username,
+				ready,
+			});
+			io.emit("UPDATE_ROOMS", updateRoomsHelper(roomsMap, io));
+		});
 
 
 

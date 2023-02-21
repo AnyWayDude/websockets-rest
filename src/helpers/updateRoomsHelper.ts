@@ -23,26 +23,3 @@ export const updateRoomsHelper = (rooms: Map<string, User[]>, io: Server): Room[
 
     return result;
 };
-
-export const updateRoomHelper = (room: string, id: string, io: Server) => {
-    const roomUsers = io.sockets.adapter.rooms.get(room);
-
-    if (!roomUsers) {
-        return [];
-    }
-
-    return Array.from(roomUsers).reduce((results: User[], user: string) => {
-        const socket = io.sockets.sockets.get(user);
-        if (socket) {
-            const user: User = {
-                id: id,
-                username: socket.handshake.query.username as string,
-                progress: 0,
-                ready: false,
-            }
-            results.push(user)
-        }
-
-        return results
-    }, [])
-};
