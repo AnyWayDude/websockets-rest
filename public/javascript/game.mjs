@@ -36,7 +36,7 @@ socket.on("UPDATE_ROOMS", (rooms) => {
 		name,
 		numberOfUsers: userCount,
 		onJoin: () => {
-		  socket.emit("_ROOM", name);
+		  socket.emit("ENTER_ROOM", name);
 		  availableRooms.classList.toggle("display-none");
 		  gamePage.classList.toggle("display-none");
 		  roomName.innerText = name;
@@ -86,3 +86,5 @@ socket.on("CREATE_ROOM_SUCCESS", (name) => {
 	availableRooms.classList.toggle('display-none');
 	gamePage.classList.toggle('display-none');
   })
+
+  
